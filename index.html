@@ -178,7 +178,10 @@
             border-radius: 10px;
             margin-bottom: 20px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            text-align: center;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
         }
 
         .header {
@@ -245,6 +248,120 @@
             background-color: var(--hover-background);
             padding-left: 10px;
             transition: all 0.3s;
+        }
+        
+        /* Info buttons container */
+        .info-buttons-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        
+        /* Info buttons styling */
+        .info-btn {
+            background: var(--button-background);
+            color: var(--button-text);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .info-btn:hover {
+            opacity: 0.8;
+            transform: translateY(-2px);
+        }
+        
+        /* Modal overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        
+        /* Modal content */
+        .modal-content {
+            background: var(--card-background);
+            border-radius: 10px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+        
+        /* Modal header */
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--header-background);
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            color: var(--header-text-color);
+        }
+        
+        /* Close button */
+        .close-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .close-btn:hover {
+            background: #c0392b;
+        }
+        
+        /* Modal body */
+        .modal-body {
+            padding: 20px;
+            color: var(--text-color);
+        }
+        
+        .modal-body ul {
+            padding-left: 20px;
+        }
+        
+        .modal-body li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .modal-body a {
+            color: var(--link-color);
+            text-decoration: none;
+            display: block;
+            padding: 5px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .modal-body a:hover {
+            color: var(--hover-color);
+            padding-left: 10px;
         }
 
         /* Safety Alerts - using variables */
@@ -417,14 +534,14 @@
         .nav-btn {
             background: var(--nav-btn-background);
             border: 2px solid var(--nav-btn-border);
-            padding: 12px 24px;
-            margin: 0 10px;
+            padding: 10px 16px;
             border-radius: 25px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 500;
             transition: all 0.3s ease;
             color: var(--nav-btn-text);
+            white-space: nowrap;
         }
 
         .nav-btn:hover {
@@ -799,6 +916,7 @@
             <button onclick="showSection('complete')" class="nav-btn" id="complete-btn">📖 完整詞彙表</button>
             <button onclick="showSection('confusing')" class="nav-btn" id="conf-btn">🤔 容易混淆的AWS用語</button>
             <button onclick="showSection('comparison')" class="nav-btn" id="compare-btn">🔍 AWS服務比較</button>
+            <button id="aws-info-btn" class="nav-btn">⚠️ 安全提醒/常用網址</button>
             <button onclick="showSection('custom')" class="nav-btn" id="custom-btn">➕ 添加術語</button>
         </div>
 
@@ -807,7 +925,7 @@
         </div>
 
         <!-- 安全提醒和常用網址區域 -->
-        <div class="grid">
+        <div id="aws-info-section" class="grid" style="display: none;">
             <div class="card">
                 <div class="card-header">
                     <span class="card-icon">🎯</span>
@@ -2578,6 +2696,9 @@
                 section.classList.remove('active');
             });
 
+            // 隱藏 AWS 安全提醒區域
+            document.getElementById('aws-info-section').style.display = 'none';
+
             // 移除所有按鈕的active類
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('active');
@@ -2601,6 +2722,33 @@
                 targetBtn.classList.add('active');
             }
         }
+
+        // 安全提醒/常用網址 toggle
+        document.getElementById('aws-info-btn').addEventListener('click', function() {
+            const awsInfoSection = document.getElementById('aws-info-section');
+            const isVisible = awsInfoSection.style.display !== 'none';
+
+            // 隱藏所有內容區域
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // 移除所有按鈕的active類
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            if (isVisible) {
+                // 如果已顯示，點擊後隱藏並回到基礎詞彙
+                awsInfoSection.style.display = 'none';
+                document.getElementById('vocabulary-section').classList.add('active');
+                document.getElementById('vocab-btn').classList.add('active');
+            } else {
+                // 顯示 AWS 安全提醒區域
+                awsInfoSection.style.display = '';
+                this.classList.add('active');
+            }
+        });
 
         // 搜索功能
         document.getElementById('searchInput').addEventListener('input', function(e) {
@@ -3158,29 +3306,35 @@
 
 <script>
     const linuxCLIToggle = document.getElementById('linuxCLIToggle');
-    
-    // Linux CLI toggle functionality - now shows content in the vocabulary section
+
+    // Linux CLI toggle functionality - now toggles between views and updates button text
+    let isLinuxCLIView = false;
     linuxCLIToggle.addEventListener('click', () => {
-        // Hide all other sections
-        document.querySelectorAll('.content-section').forEach(section => {
-            section.classList.remove('active');
-        });
+        // Toggle the view state
+        isLinuxCLIView = !isLinuxCLIView;
         
-        // Create or show the Linux CLI section
-        let linuxSection = document.getElementById('linux-cli-section');
-        if (!linuxSection) {
-            linuxSection = document.createElement('div');
-            linuxSection.id = 'linux-cli-section';
-            linuxSection.className = 'content-section active';
-            linuxSection.innerHTML = `
-                <div class="card" style="grid-column: 1 / -1;">
-                    <div class="card-header">
-                        <span class="card-icon">🖥️</span>
-                        <h2 class="card-title">Linux常用命令指南</h2>
-                    </div>
-                    
-                    <div class="linux-cli-content">
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+        if (isLinuxCLIView) {
+            // Switch to Linux CLI view
+            // Hide all other sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Create or show the Linux CLI section
+            let linuxSection = document.getElementById('linux-cli-section');
+            if (!linuxSection) {
+                linuxSection = document.createElement('div');
+                linuxSection.id = 'linux-cli-section';
+                linuxSection.className = 'content-section active';
+                linuxSection.innerHTML = `
+                    <div class="card" style="grid-column: 1 / -1;">
+                        <div class="card-header">
+                            <span class="card-icon">🖥️</span>
+                            <h2 class="card-title">Linux & AWS常用命令指南</h2>
+                        </div>
+                        
+                        <div class="linux-cli-content">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
                             <div class="term-explanation">
                                 <h4 class="info-color">📁 檔案操作命令</h4>
                                 <table style="width: 100%; border-collapse: collapse;">
@@ -3494,7 +3648,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                            
+
                             <div class="term-explanation">
                                 <h4 class="info-color">📦 常見軟體服務管理 (AWS Red Hat環境)</h4>
                                 <table style="width: 100%; border-collapse: collapse;">
@@ -3530,6 +3684,14 @@
                                             <td style="border: 1px solid var(--border-color); padding: 8px;">啟動Docker服務</td>
                                         </tr>
                                         <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo systemctl start firewalld</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">啟動防火牆服務</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo systemctl start sshd</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">啟動SSH服務</td>
+                                        </tr>
+                                        <tr>
                                             <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo journalctl -u servicename</code></td>
                                             <td style="border: 1px solid var(--border-color); padding: 8px;">查看特定服務的日誌</td>
                                         </tr>
@@ -3540,6 +3702,232 @@
                                         <tr>
                                             <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo tail -f /var/log/httpd/error_log</code></td>
                                             <td style="border: 1px solid var(--border-color); padding: 8px;">實時查看Apache錯誤日誌</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo tail -f /var/log/nginx/error.log</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">實時查看Nginx錯誤日誌</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo tail -f /var/log/tomcat/catalina.out</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">實時查看Tomcat日誌</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo tail -f /var/lib/pgsql/data/log/postgresql-*.log</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">實時查看PostgreSQL日誌</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo tail -f /var/log/mysqld.log</code> 或 <code>sudo tail -f /var/log/mariadb/mariadb.log</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">實時查看MySQL/MariaDB日誌</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="term-explanation">
+                                <h4 class="info-color">🔧 AWS Red Hat常用命令</h4>
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background: var(--hover-background);">
+                                            <th style="border: 1px solid var(--border-color); padding: 8px; text-align: left;">命令</th>
+                                            <th style="border: 1px solid var(--border-color); padding: 8px; text-align: left;">說明</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>pwd</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">顯示當前目錄路徑</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo systemctl start tomcat</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">啟動Tomcat應用伺服器</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo systemctl start postgresql</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">啟動PostgreSQL資料庫</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo systemctl start mariadb</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">啟動MariaDB資料庫（Red Hat常用）</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo systemctl start httpd</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">啟動Apache HTTP伺服器（Red Hat預設）</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo systemctl start named</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">啟動BIND DNS服務</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo systemctl start firewalld</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">啟動防火牆服務</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo firewall-cmd --permanent --add-port=80/tcp</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">開放防火牆端口（Red Hat/CentOS 7+）</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>yum install package_name</code> 或 <code>dnf install package_name</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">安裝軟體包（Red Hat/CentOS）</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>rpm -qa</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">列出已安裝的軟體包</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo yum update</code> 或 <code>sudo dnf update</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">更新系統軟體包</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo amazon-linux-extras install epel</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">在Amazon Linux上安裝EPEL軟體源</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>getenforce</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">查看SELinux狀態</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>setenforce 0</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">臨時禁用SELinux</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sestatus</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">查看SELinux詳細狀態</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo setsebool -P httpd_can_network_connect 1</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">設置SELinux布林值（允許httpd網路連接）</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>ps aux | grep process_name</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">搜尋特定進程</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>kill PID</code> 或 <code>kill -9 PID</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">終止指定PID的進程</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>systemctl list-units --type=service --state=running</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">列出正在運行的服務</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>df -hT</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">顯示磁碟空間使用情況及檔案系統類型</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>lsblk</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">顯示塊設備資訊</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>lsof -i :port_number</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">查看指定端口的使用情況</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>netstat -tuln</code> 或 <code>ss -tuln</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">顯示監聽的網絡端口</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="term-explanation">
+                                <h4 class="info-color">🌐 網站與應用服務命令</h4>
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background: var(--hover-background);">
+                                            <th style="border: 1px solid var(--border-color); padding: 8px; text-align: left;">命令</th>
+                                            <th style="border: 1px solid var(--border-color); padding: 8px; text-align: left;">說明</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo systemctl start tomcat</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">啟動Tomcat應用伺服器</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo systemctl start httpd</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">啟動Apache HTTP伺服器</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo systemctl start nginx</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">啟動Nginx伺服器</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo systemctl start php-fpm</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">啟動PHP-FPM服務</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo systemctl start vsftpd</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">啟動FTP服務</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo systemctl start crond</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">啟動定時任務服務</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>crontab -e</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">編輯當前用戶的定時任務</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>crontab -l</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">查看當前用戶的定時任務</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>systemctl list-timers</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">查看系統計時器</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="term-explanation">
+                                <h4 class="info-color">🗄️ 資料庫服務命令</h4>
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background: var(--hover-background);">
+                                            <th style="border: 1px solid var(--border-color); padding: 8px; text-align: left;">命令</th>
+                                            <th style="border: 1px solid var(--border-color); padding: 8px; text-align: left;">說明</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo systemctl start postgresql</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">啟動PostgreSQL資料庫</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo systemctl start mariadb</code> 或 <code>sudo systemctl start mysqld</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">啟動MariaDB/MySQL資料庫</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>sudo -u postgres psql</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">以postgres用戶身份進入PostgreSQL命令行</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>mysql -u username -p</code> 或 <code>mariadb -u username -p</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">進入MySQL/MariaDB命令行</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>pg_dump -U username -h hostname database_name > backup.sql</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">PostgreSQL資料庫備份</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>mysqldump -u username -p database_name > backup.sql</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">MySQL/MariaDB資料庫備份</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>psql -U username -h hostname -d database_name -f backup.sql</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">PostgreSQL資料庫恢復</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>mysql -u username -p database_name < backup.sql</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">MySQL/MariaDB資料庫恢復</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>systemctl status postgresql</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">查看PostgreSQL服務狀態</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;"><code>systemctl status mariadb</code> 或 <code>systemctl status mysqld</code></td>
+                                            <td style="border: 1px solid var(--border-color); padding: 8px;">查看MariaDB/MySQL服務狀態</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -3727,55 +4115,44 @@
                             </div>
                         </div>
                         
-                        <div style="margin-top: 20px; text-align: center;">
-                            <button id="linuxCommandsBtn" style="background: var(--button-background); color: var(--button-text); border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px;">Linux CLI指令</button>
-                        </div>
                     </div>
                 </div>
             `;
             
             // Add the section to the page
             document.querySelector('.container').appendChild(linuxSection);
+            
+            // Update button text to "返回主頁"
+            linuxCLIToggle.textContent = '返回主頁';
         } else {
             // If section exists, just activate it
             linuxSection.classList.add('active');
+            
+            // Update button text to "返回主頁"
+            linuxCLIToggle.textContent = '返回主頁';
         }
         
         // Hide the navigation menu and other controls
         document.querySelector('.nav-menu-container').style.display = 'none';
         document.querySelector('.search-box').style.display = 'none';
-        linuxCLIToggle.style.display = 'none';
-    });
-    
-    // Add event listener for the linux commands button using event delegation
-    document.addEventListener('click', function(e) {
-        if (e.target.id === 'linuxCommandsBtn') {
-            // Show all other sections again
-            document.querySelector('.nav-menu-container').style.display = 'block';
-            document.querySelector('.search-box').style.display = 'block';
-            document.getElementById('linux-cli-section').classList.remove('active');
-            linuxCLIToggle.style.display = 'block';
+        document.getElementById('aws-info-section').style.display = 'none';
+        // Don't hide the linuxCLIToggle button, we need it to switch back
+    } else {
+        // Switch back to main view
+        // Show all other sections again
+        document.querySelector('.nav-menu-container').style.display = 'block';
+        document.querySelector('.search-box').style.display = 'block';
+        document.getElementById('linux-cli-section').classList.remove('active');
 
-            // Show the vocabulary section by default
-            document.getElementById('vocabulary-section').classList.add('active');
-            document.getElementById('vocab-btn').classList.add('active');
-        }
-    });
+        // Show the vocabulary section by default
+        document.getElementById('vocabulary-section').classList.add('active');
+        document.getElementById('vocab-btn').classList.add('active');
+        
+        // Update button text back to "Linux CLI指令"
+        linuxCLIToggle.textContent = 'Linux CLI指令';
+    }
+});
     
-    // Add event listener for the linux commands button using event delegation
-    document.addEventListener('click', function(e) {
-        if (e.target.id === 'linuxCommandsBtn') {
-            // Show all other sections again
-            document.querySelector('.nav-menu-container').style.display = 'block';
-            document.querySelector('.search-box').style.display = 'block';
-            document.getElementById('linux-cli-section').classList.remove('active');
-            linuxCLIToggle.style.display = 'block';
-
-            // Show the vocabulary section by default
-            document.getElementById('vocabulary-section').classList.add('active');
-            document.getElementById('vocab-btn').classList.add('active');
-        }
-    });
     
     // Custom Linux command functionality
     document.addEventListener('DOMContentLoaded', function() {
