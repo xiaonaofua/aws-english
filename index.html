@@ -2752,7 +2752,13 @@
 
         // 搜索功能
         document.getElementById('searchInput').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
+            const rawValue = e.target.value;
+            const searchTerm = rawValue.trim().toLowerCase();
+            const tokens = searchTerm.split(/\s+/).filter(Boolean).filter(t => {
+                const hasCJK = /[\u3400-\u9FFF]/.test(t);
+                if (hasCJK) return true;
+                return t.length >= 2;
+            });
             const wordItems = document.querySelectorAll('.word-item:not(.custom-term)');
             const confusingItems = document.querySelectorAll('.confusing-item');
             const customTermsContainer = document.getElementById('customTermsContainer');
@@ -2803,7 +2809,19 @@
                     const chinese = item.querySelector('.word-chinese').textContent.toLowerCase();
                     const consequence = item.querySelector('.word-consequence').textContent.toLowerCase();
 
-                    if (english.includes(searchTerm) || chinese.includes(searchTerm) || consequence.includes(searchTerm)) {
+                    const matchByTokens = tokens.length > 0
+                        ? tokens.every(t => {
+                            if (/[\u3400-\u9FFF]/.test(t)) {
+                                return english.includes(t) || chinese.includes(t) || consequence.includes(t);
+                            } else {
+                                const esc = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                                const re = new RegExp('\\b' + esc, 'i');
+                                return re.test(english) || re.test(chinese) || re.test(consequence);
+                            }
+                        })
+                        : false;
+
+                    if (matchByTokens) {
                         matchingWordItems.push(item.cloneNode(true)); // 複製節點以便在搜索結果中顯示
                         visibleCount++;
                     }
@@ -2811,12 +2829,22 @@
 
                 // 搜索自定義術語
                 const customTerms = JSON.parse(localStorage.getItem('customAWSTerms')) || [];
-                const filteredCustomTerms = customTerms.filter(term => 
-                    term.english.toLowerCase().includes(searchTerm) || 
-                    term.chinese.toLowerCase().includes(searchTerm) || 
-                    term.explanation.toLowerCase().includes(searchTerm) ||
-                    (term.usageNotes && term.usageNotes.toLowerCase().includes(searchTerm))
-                );
+                const filteredCustomTerms = customTerms.filter(term => {
+                    const eng = (term.english || '').toLowerCase();
+                    const zh = (term.chinese || '').toLowerCase();
+                    const exp = (term.explanation || '').toLowerCase();
+                    const note = (term.usageNotes || '').toLowerCase();
+                    if (tokens.length === 0) return false;
+                    return tokens.every(t => {
+                        if (/[\u3400-\u9FFF]/.test(t)) {
+                            return eng.includes(t) || zh.includes(t) || exp.includes(t) || note.includes(t);
+                        } else {
+                            const esc = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                            const re = new RegExp('\\b' + esc, 'i');
+                            return re.test(eng) || re.test(zh) || re.test(exp) || re.test(note);
+                        }
+                    });
+                });
                 
                 // 搜索比較內容
                 const comparisonItems = document.querySelectorAll('#comparison-section .comparison-item');
@@ -2824,7 +2852,18 @@
                 
                 comparisonItems.forEach(item => {
                     const textContent = item.textContent.toLowerCase();
-                    if (textContent.includes(searchTerm)) {
+                    const ok = tokens.length > 0
+                        ? tokens.every(t => {
+                            if (/[\u3400-\u9FFF]/.test(t)) {
+                                return textContent.includes(t);
+                            } else {
+                                const esc = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                                const re = new RegExp('\\b' + esc, 'i');
+                                return re.test(textContent);
+                            }
+                        })
+                        : false;
+                    if (ok) {
                         matchingComparisonItems.push(item.cloneNode(true)); // 複製節點以便在搜索結果中顯示
                     }
                 });
@@ -2834,7 +2873,7 @@
                 
                 // 顯示搜索結果標題
                 const resultsTitle = document.createElement('h3');
-                resultsTitle.textContent = `搜索 "${searchTerm}" 的結果`;
+                resultsTitle.textContent = `搜索 "${rawValue.trim()}" 的結果`;
                 resultsTitle.style.cssText = 'grid-column: 1 / -1; color: var(--text-color); margin: 0 0 15px 0;';
                 searchResultsContainer.appendChild(resultsTitle);
                 
